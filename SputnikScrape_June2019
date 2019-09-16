@@ -1,0 +1,256 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Tue Jun  4 12:29:28 2019
+
+@author: Alex
+"""
+cd /Users/Alex2/Desktop/Documents/Python
+
+
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import requests 
+import re
+%matplotlib inline
+
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
+
+url3 = 'https://sputniknews.com/archive/'
+html = urlopen(url3)
+
+soup = BeautifulSoup(html, 'lxml')
+type(soup)
+
+# Get the title of page
+title = soup.title
+print(title)
+
+# Get articles on page
+articles = soup.select(".b-plainlist__title a")
+print(articles)
+
+# Get article titles on page
+art_titles = [title.text for title in articles]
+print(art_titles)
+
+# Get article links on page
+art_links = ["http://sputniknews.com"+title["href"] for title in articles]
+print(art_links)
+
+# Get article date
+date = soup.select(".b-plainlist__date")
+print(date)
+
+art_date = [title.text for title in date]
+print(art_date)
+
+# Get article summary
+summary = soup.select(".b-plainlist__announce a")
+print(summary)
+
+art_summary = [title.text for title in summary]
+print(art_summary)
+
+
+# Make into Data Frame
+d = {'Titles':art_titles,'Date':art_date, 'Summary': art_summary}
+d
+
+df_sputnik = pd.DataFrame(d)
+df_sputnik
+
+df_sputnik.dtypes
+
+# Try it in one loop
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jun  5 15:19:29 2019
+
+@author: Alex
+"""
+
+html = urlopen(url2)
+html = urlopen(url3)
+soup = BeautifulSoup(r.content, "lxml")
+g_data = soup.find_all("div", {"class": "media__top"})
+print(g_data)
+
+url2 = 'https://sputniknews.com/archive/'
+r2 = requests.get(url2)
+soup2 = BeautifulSoup(r2.content, "lxml")
+soup2
+g_data2 = soup2.find_all("li", {"class": "b-plainlist__item"})
+for item in g_data2:
+        title_sput = item.contents[1].text
+        course2= [title_sput]
+print(g_data2)
+
+for item in g_data2:
+        title_sput = item.contents[1].text
+        
+print(title_sput)
+
+#Selenium
+
+# Import your newly installed selenium package
+from selenium import webdriver
+import time
+
+
+# Create a new instance of the Chome driver
+driver= webdriver.Chrome()
+driver.get('http://www.google.com/xhtml');
+time.sleep(5) # Let the user actually see something!
+search_box = driver.find_element_by_name('q')
+search_box.send_keys('ChromeDriver')
+search_box.submit()
+time.sleep(5) # Let the user actually see something!
+driver.quit()
+
+
+# go to the google home page
+driver.get("http://www.google.com")
+
+#Sputnik Efficient Code#
+
+from urllib.request import urlopen
+from bs4 import BeautifulSoup
+
+sput_url = 'https://sputniknews.com/archive/'
+html = urlopen(sput_url)
+
+soup = BeautifulSoup(html, 'lxml')
+type(soup)
+
+articles_sput_list=[]
+
+
+sput_data = soup.find_all("div", {"class": "b-plainlist__info"})
+for item in sput_data:
+    sput_date = item.contents[0].text
+    sput_title = item.contents[1].text
+    sput_overview = item.contents[2].text
+    articles_sput=[sput_date, sput_title, sput_overview]
+    articles_sput_list.append(articles_sput)
+    
+with open ('sputnik_test','w') as file:
+    writer=csv.writer(file)
+    for row in articles_sput_list:
+        writer.writerow(row)  
+
+
+df_sput= pd.DataFrame(articles_sput_list)
+
+
+
+###############
+#Russia Today###
+################
+
+
+url = 'https://www.rt.com/news/'
+r = requests.get(url)
+soup = BeautifulSoup(r.content, "lxml")
+print(soup.title)
+
+# Find Articles 
+rt1 = soup.find_all("div", {"class": "card-rows__content"})
+print(rt1)
+for x in rt1:
+    xtest= x.text
+    print(xtest)
+
+# Extract text for articles on one page
+x = [x.text for x in rt1]
+
+# Get rid of non-articles extracted
+x = x[0:15]
+
+# Split into title, summary, and date
+title= [i.split("\n\n")[0] for i in x]
+summary= [i.split("\n\n")[1] for i in x]
+date= [i.split("\n\n")[2] for i in x]
+
+# Remove White Space
+title = [num.strip() for num in title]
+summary = [num.strip() for num in summary]
+date = [num.strip() for num in date]
+
+# Make into Dataframe
+rt_d = {'Titles':title,'Date':date, 'Summary':summary}
+rt_d
+
+df_rt = pd.DataFrame(rt_d)
+df_rt
+
+df_rt.dtypes
+df_rt.head()
+
+# Date Time
+
+import datetime
+print ('Current date/time: {}'.format(datetime.datetime.now()))  
+
+date_example = df_rt['Date'][0]
+date_example
+
+date_time_obj = datetime.datetime.strptime(date_example, "%b %d, %Y %H:%M")
+
+print('Date:', date_time_obj.date())  
+print('Time:', date_time_obj.time())  
+print('Date-time:', date_time_obj)  
+
+
+# Complete the call to convert the date column
+df_rt['Date'] =  pd.to_datetime(df_rt['Date'],
+                              format="%b %d, %Y %H:%M")
+
+# Confirm the date column is in datetime format
+print(df_rt.info())
+
+
+
+# Import the scrapy library
+# Import scrapy
+import scrapy
+
+# Import the CrawlerProcess: for running the spider
+from scrapy.crawler import CrawlerProcess
+
+# Create the Spider class
+class DC_Chapter_Spider(scrapy.Spider):
+  name = "dc_chapter_spider"
+  # start_requests method
+  def start_requests(self):
+    yield scrapy.Request(url = 'https://www.datacamp.com/courses/all',
+                         callback = self.parse_front)
+  # First parsing method
+  def parse_front(self, response):
+    course_blocks = response.css('div.course-block')
+    course_links = course_blocks.xpath('./a/@href')
+    links_to_follow = course_links.extract()
+    for url in links_to_follow:
+      yield response.follow(url = url,
+                            callback = self.parse_pages)
+  # Second parsing method
+  def parse_pages(self, response):
+    crs_title = response.xpath('//h1[contains(@class,"title")]/text()')
+    crs_title_ext = crs_title.extract_first().strip()
+    ch_titles = response.css('h4.chapter__title::text')
+    ch_titles_ext = [t.strip() for t in ch_titles.extract()]
+    dc_dict[ crs_title_ext ] = ch_titles_ext
+
+# Initialize the dictionary **outside** of the Spider class
+dc_dict = dict()
+
+# Run the Spider
+process = CrawlerProcess()
+process.crawl(DC_Chapter_Spider)
+process.start()
+
+
